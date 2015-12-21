@@ -5,8 +5,8 @@ Gem::Specification.new do |s|
   s.version         = '1.0.0'
   s.authors         = ['Yaroslav Konoplov']
   s.email           = ['yaroslav@inbox.com']
-  s.summary         = 'ActiveRecord descriptive library'
-  s.description     = 'ActiveRecord descriptive library'
+  s.summary         = 'Easy AWS S3 backup'
+  s.description     = 'Easy AWS S3 backup'
   s.homepage        = 'http://github.com/yivo/backup-agent'
   s.license         = 'MIT'
 
