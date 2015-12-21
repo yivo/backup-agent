@@ -39,7 +39,7 @@ module Backup
       set :directories, -> {
         Dir['/var/www/*'].each_with_object({}) do |el, memo|
           if Dir.exists?(File.join(el, 'current/public/uploads'))
-            memo["#{File.basename(el)}-uploads"] = File.join(el, 'current/public/uploads')
+            memo["Uploads #{File.basename(el)}"] = File.join(el, 'current/public/uploads')
           end
         end
       }
