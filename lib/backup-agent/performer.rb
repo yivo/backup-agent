@@ -23,8 +23,9 @@ module Backup
 
     def backup_directories
       config.get(:directories).each do |name, dir|
-        dir_filename = "dir-#{name}.tar.gz"
-        cmd = "cd #{dir} && /usr/bin/env tar -czf #{tmp_path}/#{dir_filename} ."
+        dir_filename  = "#{name}.tar.gz"
+        dir_fileparam = Shellwords.escape(dir_filename)
+        cmd = "cd #{dir} && /usr/bin/env tar -czf #{tmp_path}/#{dir_fileparam} ."
         puts "Exec #{cmd}"
         system(cmd)
         storage.upload("#{@timestamp}/#{dir_filename}", "#{tmp_path}/#{dir_filename}")
@@ -34,13 +35,14 @@ module Backup
     def backup_files
       config.get(:files).each do |name, files|
         begin
-          files_tmp_path  = File.join(tmp_path, "#{name}-tmp")
-          file_bunch_name = "files-#{name}.tar.gz"
+          files_tmp_path   = File.join(tmp_path, "#{name}-tmp")
+          file_bunch_name  = "#{name}.tar.gz"
+          file_bunch_param = Shellwords.escape(file_bunch_name)
 
           FileUtils.mkdir_p(files_tmp_path)
           FileUtils.cp(files.select { |el| File.exists?(el) }, files_tmp_path)
 
-          cmd = "cd #{files_tmp_path} && /usr/bin/env tar -czf #{tmp_path}/#{file_bunch_name} ."
+          cmd = "cd #{files_tmp_path} && /usr/bin/env tar -czf #{tmp_path}/#{file_bunch_param} ."
           system(cmd)
 
           storage.upload("#{@timestamp}/#{file_bunch_name}", "#{tmp_path}/#{file_bunch_name}")
@@ -52,9 +54,10 @@ module Backup
 
     def backup_mysql
       config.get(:mysql_databases).each do |db|
-        db_filename = "mysql-#{db}.gz"
+        db_filename  = "MySQL Database #{db}.gz"
+        db_fileparam = Shellwords.escape(db_filename)
         dump = with_env "mysqldump #{config.get(:mysql_connect)} #{config.get(:mysqldump_options).join(' ')} #{db}"
-        gzip = with_env "gzip -5 -c > #{tmp_path}/#{db_filename}"
+        gzip = with_env "gzip -5 -c > #{tmp_path}/#{db_fileparam}"
 
         puts "Exec #{dump} | #{gzip}"
         system "#{dump} | #{gzip}"
@@ -68,10 +71,11 @@ module Backup
       FileUtils.mkdir_p(mongo_dump_dir)
 
       config.get(:mongo_databases).each do |db|
-        db_filename = "mongo-#{db}.tar.gz"
+        db_filename  = "Mongo Database #{db}.tar.gz"
+        db_fileparam = Shellwords.escape(db_filename)
         dump = with_env "mongodump #{config.get(:mongo_connect)} -d #{db} -o #{mongo_dump_dir}"
         cd   = "cd #{mongo_dump_dir}/#{db}"
-        tar  = with_env "tar -czf #{tmp_path}/#{db_filename} ."
+        tar  = with_env "tar -czf #{tmp_path}/#{db_fileparam} ."
 
         puts "Exec #{dump} && #{cd} && #{tar}"
         system "#{dump} && #{cd} && #{tar}"
