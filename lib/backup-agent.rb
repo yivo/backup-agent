@@ -1,6 +1,6 @@
 puts "Ruby version #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}"
 
-%w(rubygems aws-sdk fileutils confo-config shellwords pry).each { |el| require(el) }
+%w( rubygems aws-sdk fileutils confo-config shellwords ).each { |el| require(el) }
 
 %w( abstract_storage abstract_storage_config abstract_storage_object
    s3_storage s3_config s3_object

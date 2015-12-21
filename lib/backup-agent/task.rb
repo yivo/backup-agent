@@ -1,7 +1,6 @@
 module Backup
   class Task < Confo::Config
     def initialize(*)
-      super
       set :mysql_user, 'root'
       set :mysql_password, 'root'
       set :mysql_host, 'localhost'
@@ -48,6 +47,7 @@ module Backup
       set :files, {}
 
       set :days_to_keep_backups, 30
+      super
     end
   end
 end
