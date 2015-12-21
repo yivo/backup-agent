@@ -8,7 +8,7 @@ puts "Ruby version #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}"
 
 module Backup
   class << self
-    def perform_backup(storage, &block)
+    def perform(storage, &block)
       Performer.new.perform_backup(storage, Task.new(&block))
     end
 
