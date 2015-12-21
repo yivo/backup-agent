@@ -2,11 +2,11 @@ puts "Ruby version #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}"
 
 %w(rubygems aws-sdk fileutils confo-config shellwords).each { |lib| require lib }
 
-require 'backup-agent/s3_config'
-require 'backup-agent/task_config'
-require 'backup-agent/service'
-require 'backup-agent/features'
-require 'backup-agent/s3'
+require_relative 'backup-agent/s3_config'
+require_relative 'backup-agent/task_config'
+require_relative 'backup-agent/service'
+require_relative 'backup-agent/features'
+require_relative 'backup-agent/s3'
 
 module BackupAgent
   class << self

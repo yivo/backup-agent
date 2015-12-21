@@ -37,13 +37,13 @@ module BackupAgent
       set :mongo_host, 'localhost'
       set :mongo_connect, -> { "-h #{get(:mongo_host)}" }
 
-      set :directories, -> do
+      set :directories, -> {
         Dir['/var/www/*'].each_with_object({}) do |el, memo|
           if Dir.exists?(File.join(el, 'current/public/uploads'))
             memo["#{File.basename(el)}-uploads"] = File.join(el, 'current/public/uploads')
           end
         end
-      end
+      }
 
       set :files, {}
 
