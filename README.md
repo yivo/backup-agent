@@ -16,5 +16,5 @@ end
 
 ## Gemfile
 ```ruby
-gem 'backup-agent', github: 'yivo/backup-agent'
+gem 'backup-agent'
 ```
