@@ -1,5 +1,10 @@
-module BackupAgent
-  class << self
+module Backup
+  class Features
+    def initialize
+      check_mysql
+      check_mongodb
+    end
+
     def check_mysql
       if @mysql_check.nil?
         @mysql_check = system('/usr/bin/env mysql --version') ? true : (puts('MySQL is not installed'); false)
@@ -14,18 +19,11 @@ module BackupAgent
       @mongodb_check
     end
 
-    def check_features
-      check_mysql
-      check_mongodb
-    end
-
     def mysql_installed?
-      check_features
       !!@mysql_check
     end
 
     def mongodb_installed?
-      check_features
       !!@mongodb_check
     end
   end

@@ -1,19 +1,19 @@
 puts "Ruby version #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}"
 
-%w(rubygems aws-sdk fileutils confo-config shellwords).each { |lib| require lib }
+%w(rubygems aws-sdk fileutils confo-config shellwords pry).each { |el| require(el) }
 
-require_relative 'backup-agent/s3_config'
-require_relative 'backup-agent/task_config'
-require_relative 'backup-agent/service'
-require_relative 'backup-agent/features'
-require_relative 'backup-agent/s3'
+%w( abstract_storage abstract_storage_config abstract_storage_object
+   s3_storage s3_config s3_object
+   features task performer ).each { |el| require_relative("backup-agent/#{el}") }
 
-module BackupAgent
+module Backup
   class << self
-    def perform_backup(&block)
-      task_config = TaskConfig.new
-      task_config.configure(&block) if block
-      Service.new(task_config).perform_backup
+    def perform_backup(storage, &block)
+      Performer.new.perform_backup(storage, Task.new(&block))
+    end
+
+    def features
+      @features ||= Features.new
     end
   end
 end

@@ -1,5 +1,5 @@
-module BackupAgent
-  class TaskConfig < Confo::Config
+module Backup
+  class Task < Confo::Config
     def initialize(*)
       super
       set :mysql_user, 'root'
@@ -46,8 +46,6 @@ module BackupAgent
       }
 
       set :files, {}
-
-      set :s3_bucket, nil
 
       set :days_to_keep_backups, 30
     end

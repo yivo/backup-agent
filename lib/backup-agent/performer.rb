@@ -1,22 +1,22 @@
-module BackupAgent
-  class Service
-    attr_reader :config
+module Backup
+  class Performer
+    attr_reader :storage, :config
 
-    def initialize(config)
+    def perform_backup(storage, config)
+      @storage = storage
       @config = config
-    end
-
-    def perform_backup
       @started_at = Time.now.utc
       @timestamp = @started_at.strftime('%s - %A %d %B %Y %H:%M')
+      storage.open
       make_tmp_dir
-      backup_mysql if BackupAgent.mysql_installed?
-      backup_mongodb if BackupAgent.mongodb_installed?
+      backup_mysql if Backup.features.mysql_installed?
+      backup_mongodb if Backup.features.mongodb_installed?
       backup_directories
       backup_files
       cleanup_old_backups
     ensure
       remove_tmp_dir
+      storage.close
     end
 
   protected
@@ -27,9 +27,7 @@ module BackupAgent
         cmd = "cd #{dir} && /usr/bin/env tar -czf #{tmp_path}/#{dir_filename} ."
         puts "Exec #{cmd}"
         system(cmd)
-
-        obj = BackupAgent.s3.bucket(config.s3_bucket).object("#{@timestamp}/#{dir_filename}")
-        obj.upload_file("#{tmp_path}/#{dir_filename}")
+        storage.upload("#{@timestamp}/#{dir_filename}", "#{tmp_path}/#{dir_filename}")
       end
     end
 
@@ -45,8 +43,7 @@ module BackupAgent
           cmd = "cd #{files_tmp_path} && /usr/bin/env tar -czf #{tmp_path}/#{file_bunch_name} ."
           system(cmd)
 
-          obj = BackupAgent.s3.bucket(config.s3_bucket).object("#{@timestamp}/#{file_bunch_name}")
-          obj.upload_file("#{tmp_path}/#{file_bunch_name}")
+          storage.upload("#{@timestamp}/#{file_bunch_name}", "#{tmp_path}/#{file_bunch_name}")
         ensure
           FileUtils.remove_dir(files_tmp_path)
         end
@@ -56,14 +53,13 @@ module BackupAgent
     def backup_mysql
       config.get(:mysql_databases).each do |db|
         db_filename = "mysql-#{db}.gz"
-        dump = "/usr/bin/env mysqldump #{config.get(:mysql_connect)} #{config.get(:mysqldump_options).join(' ')} #{db}"
-        gzip = "/usr/bin/env gzip -5 -c > #{tmp_path}/#{db_filename}"
+        dump = with_env "mysqldump #{config.get(:mysql_connect)} #{config.get(:mysqldump_options).join(' ')} #{db}"
+        gzip = with_env "gzip -5 -c > #{tmp_path}/#{db_filename}"
 
         puts "Exec #{dump} | #{gzip}"
         system "#{dump} | #{gzip}"
 
-        obj = BackupAgent.s3.bucket(config.s3_bucket).object("#{@timestamp}/#{db_filename}")
-        obj.upload_file("#{tmp_path}/#{db_filename}")
+        storage.upload("#{@timestamp}/#{db_filename}", "#{tmp_path}/#{db_filename}")
       end
     end
 
@@ -72,16 +68,15 @@ module BackupAgent
       FileUtils.mkdir_p(mongo_dump_dir)
 
       config.get(:mongo_databases).each do |db|
-        db_filename = "mongo-#{db}.tgz"
-        dump = "/usr/bin/env mongodump #{config.get(:mongo_connect)} -d #{db} -o #{mongo_dump_dir}"
+        db_filename = "mongo-#{db}.tar.gz"
+        dump = with_env "mongodump #{config.get(:mongo_connect)} -d #{db} -o #{mongo_dump_dir}"
         cd   = "cd #{mongo_dump_dir}/#{db}"
-        tar  = "/usr/bin/env tar -czf #{tmp_path}/#{db_filename} ."
+        tar  = with_env "tar -czf #{tmp_path}/#{db_filename} ."
 
         puts "Exec #{dump} && #{cd} && #{tar}"
         system "#{dump} && #{cd} && #{tar}"
 
-        obj = BackupAgent.s3.bucket(config.s3_bucket).object("#{@timestamp}/#{db_filename}")
-        obj.upload_file("#{tmp_path}/#{db_filename}")
+        storage.upload("#{@timestamp}/#{db_filename}", "#{tmp_path}/#{db_filename}")
       end
     ensure
       FileUtils.remove_dir(mongo_dump_dir)
@@ -89,8 +84,8 @@ module BackupAgent
 
     def cleanup_old_backups
       cutoff_date = Time.now.utc.to_i - (config.get(:days_to_keep_backups) * 86400)
-      BackupAgent.s3.bucket(config.s3_bucket).objects.each do |o|
-        o.delete if o.last_modified.to_i < cutoff_date
+      storage.each do |obj|
+        obj.delete if obj.last_modified.to_i < cutoff_date
       end
     end
 
@@ -104,6 +99,10 @@ module BackupAgent
 
     def tmp_path
       "/tmp/backup-agent-#{@started_at.strftime('%d-%m-%Y-%H:%M')}"
+    end
+
+    def with_env(cmd)
+      "/usr/bin/env #{cmd}"
     end
   end
 end
