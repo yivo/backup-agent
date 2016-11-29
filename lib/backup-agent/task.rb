@@ -34,8 +34,8 @@ module Backup
 
       set :mysql_connect, -> do
         pass       = get(:mysql_password)
-        pass_param = pass && !pass.empty? ? "-p#{pass}" : ''
-        "--user #{get(:mysql_user)} --password=#{pass_param} --host=#{get(:mysql_host)}"
+        pass_param = pass && !pass.empty? ? "--password=#{pass}" : ''
+        "--user #{get(:mysql_user)} #{pass_param} --host=#{get(:mysql_host)}"
       end
 
       set :mongo_databases, -> do
