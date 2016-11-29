@@ -23,9 +23,9 @@ module Backup
 
     def backup_directories
       config.get(:directories).each do |name, dir|
-        dir_filename  = "#{name}.tar.xz"
+        dir_filename  = "#{name}.tar"
         dir_fileparam = Shellwords.escape(dir_filename)
-        cmd = "cd #{dir} && /usr/bin/env XZ_OPT=-3 tar -cJvf #{tmp_path}/#{dir_fileparam} ."
+        cmd = "cd #{dir} && /usr/bin/env tar -cvf #{tmp_path}/#{dir_fileparam} ."
         puts "Exec #{cmd}"
         system(cmd)
         storage.upload("#{@timestamp}/#{dir_filename}", "#{tmp_path}/#{dir_filename}")
@@ -36,13 +36,13 @@ module Backup
       config.get(:files).each do |name, files|
         begin
           files_tmp_path   = File.join(tmp_path, "#{name}-tmp")
-          file_bunch_name  = "#{name}.tar.xz"
+          file_bunch_name  = "#{name}.tar"
           file_bunch_param = Shellwords.escape(file_bunch_name)
 
           FileUtils.mkdir_p(files_tmp_path)
           FileUtils.cp(files.select { |el| File.exists?(el) }, files_tmp_path)
 
-          cmd = "cd #{files_tmp_path} && /usr/bin/env XZ_OPT=-3 tar -cJvf #{tmp_path}/#{file_bunch_param} ."
+          cmd = "cd #{files_tmp_path} && /usr/bin/env tar -cvf #{tmp_path}/#{file_bunch_param} ."
           system(cmd)
 
           storage.upload("#{@timestamp}/#{file_bunch_name}", "#{tmp_path}/#{file_bunch_name}")
