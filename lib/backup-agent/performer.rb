@@ -25,7 +25,7 @@ module Backup
       config.get(:directories).each do |name, dir|
         dir_filename  = "#{name}.tar.xz"
         dir_fileparam = Shellwords.escape(dir_filename)
-        cmd = "cd #{dir} && /usr/bin/env XZ_OPT=-9 tar -cJvf #{tmp_path}/#{dir_fileparam} ."
+        cmd = "cd #{dir} && /usr/bin/env XZ_OPT=-3 tar -cJvf #{tmp_path}/#{dir_fileparam} ."
         puts "Exec #{cmd}"
         system(cmd)
         storage.upload("#{@timestamp}/#{dir_filename}", "#{tmp_path}/#{dir_filename}")
