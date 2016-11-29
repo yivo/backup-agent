@@ -57,7 +57,7 @@ module Backup
         db_filename  = "MySQL Database #{db}.xz"
         db_fileparam = Shellwords.escape(db_filename)
         dump = with_env "mysqldump #{config.get(:mysql_connect)} #{config.get(:mysqldump_options).join(' ')} --databases #{db}"
-        xz   = with_env "xz --compress --extreme -9 --keep --threads=0 --verbose"
+        xz   = with_env "xz --compress --extreme -9 --keep --threads=0 --verbose --stdout"
 
         puts "Exec #{dump} | #{xz} > #{tmp_path}/#{db_fileparam} "
         system "#{dump} | #{xz} > #{tmp_path}/#{db_fileparam}"
