@@ -54,15 +54,13 @@ module Backup
 
     def backup_mysql
       config.get(:mysql_databases).each do |db|
-        db_filename  = "MySQL Database #{db}.xz"
-        db_fileparam = Shellwords.escape(db_filename)
-        dump = with_env "mysqldump #{config.get(:mysql_connect)} #{config.get(:mysqldump_options).join(' ')} --databases #{db}"
-        xz   = with_env "xz --compress --extreme -9 --keep --threads=0 --verbose --stdout"
+        dump_path = "#{tmp_path}/#{ shell_escape(db) }.sql"
+        dump_cmd  = "mysqldump #{config.get(:mysql_connect)} #{config.get(:mysqldump_options).join(' ')} --databases #{db}"
 
-        puts "Exec #{dump} | #{xz} > #{tmp_path}/#{db_fileparam} "
-        system "#{dump} | #{xz} > #{tmp_path}/#{db_fileparam}"
+        exec with_env("#{dump_cmd} > #{dump_path}")
+        exec with_env("xz --compress --extreme -9 --keep --threads=0 --verbose #{dump_path}")
 
-        storage.upload("#{@timestamp}/#{db_filename}", "#{tmp_path}/#{db_filename}")
+        storage.upload("#{@timestamp}/#{ shell_escape(db) }.sql.xz", "#{dump_path}.xz")
       end
     end
 
@@ -107,6 +105,15 @@ module Backup
 
     def with_env(cmd)
       "/usr/bin/env #{cmd}"
+    end
+
+    def shell_escape(x)
+      Shellwords.escape(x)
+    end
+
+    def exec(cmd)
+      puts "Exec #{cmd}"
+      system cmd
     end
   end
 end
