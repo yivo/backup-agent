@@ -2,7 +2,7 @@
 
 Gem::Specification.new do |s|
   s.name            = 'backup-agent'
-  s.version         = '1.0.8'
+  s.version         = '1.0.9'
   s.authors         = ['Yaroslav Konoplov']
   s.email           = ['yaroslav@inbox.com']
   s.summary         = 'Easy AWS S3 backup'

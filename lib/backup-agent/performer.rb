@@ -42,7 +42,7 @@ module Backup
           FileUtils.mkdir_p(files_tmp_path)
           FileUtils.cp(files.select { |el| File.exists?(el) }, files_tmp_path)
 
-          cmd = "cd #{files_tmp_path} && /usr/bin/env XZ_OPT=-9 tar -cJvf #{tmp_path}/#{file_bunch_param} ."
+          cmd = "cd #{files_tmp_path} && /usr/bin/env XZ_OPT=-3 tar -cJvf #{tmp_path}/#{file_bunch_param} ."
           system(cmd)
 
           storage.upload("#{@timestamp}/#{file_bunch_name}", "#{tmp_path}/#{file_bunch_name}")
@@ -58,7 +58,7 @@ module Backup
         dump_cmd  = "mysqldump #{config.get(:mysql_connect)} #{config.get(:mysqldump_options).join(' ')} --databases #{db}"
 
         exec with_env("#{dump_cmd} > #{dump_path}")
-        exec with_env("xz --compress --extreme -9 --keep --threads=0 --verbose #{dump_path}")
+        exec with_env("xz --compress -9 --keep --threads=0 --verbose #{dump_path}")
 
         storage.upload("#{@timestamp}/#{ shell_escape(db) }.sql.xz", "#{dump_path}.xz")
       end
