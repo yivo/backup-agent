@@ -11,18 +11,31 @@ module Backup
       end
 
       set :mysqldump_options, %w(
-        --single-transaction
+        --add-drop-database
         --add-drop-table
         --add-locks
+        --allow-keywords
+        --comments
+        --complete-insert
         --create-options
-        --disable-keys
+        --debug-check
+        --debug-info
         --extended-insert
-        --quick)
+        --flush-privileges
+        --insert-ignore
+        --lock-tables
+        --quick
+        --quote-names
+        --set-charset
+        --dump-date
+        --secure-auth
+        --tz-utc
+        --disable-keys )
 
       set :mysql_connect, -> do
         pass       = get(:mysql_password)
         pass_param = pass && !pass.empty? ? "-p#{pass}" : ''
-        "-u #{get(:mysql_user)} #{pass_param} -h #{get(:mysql_host)}"
+        "--user #{get(:mysql_user)} --password=#{pass_param} --host=#{get(:mysql_host)}"
       end
 
       set :mongo_databases, -> do
