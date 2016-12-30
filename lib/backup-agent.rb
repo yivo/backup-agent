@@ -23,8 +23,6 @@ require 'backup-agent/storages/s3-object'
 
 require 'backup-agent/tasks/mysql'
 
-require 'pry-byebug'
-
 backup to: $s3 do
   mysql :all
 end
