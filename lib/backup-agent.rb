@@ -1,19 +1,65 @@
-puts "Ruby version #{RUBY_VERSION}-p#{RUBY_PATCHLEVEL}"
+%w( ruby tar xz mysql ).each { |x| puts `#{x} --version` }
 
-%w( rubygems aws-sdk fileutils confo-config shellwords ).each { |el| require(el) }
+$LOAD_PATH << __dir__
 
-%w( abstract_storage abstract_storage_config abstract_storage_object
-   s3_storage s3_config s3_object
-   features task performer ).each { |el| require_relative("backup-agent/#{el}") }
+require 'fileutils'
+require 'shellwords'
+require 'open3'
+require 'aws-sdk'
 
-module Backup
-  class << self
-    def perform(storage, &block)
-      Performer.new.perform_backup(storage, Task.new(&block))
-    end
+require 'backup-agent/patch'
+require 'backup-agent/utils'
+require 'backup-agent/errors'
+require 'backup-agent/performer'
+require 'backup-agent/keychain'
 
-    def features
-      @features ||= Features.new
-    end
-  end
+require 'backup-agent/storages/base'
+require 'backup-agent/storages/base-config'
+require 'backup-agent/storages/base-object'
+
+require 'backup-agent/storages/s3'
+require 'backup-agent/storages/s3-config'
+require 'backup-agent/storages/s3-object'
+
+require 'backup-agent/tasks/mysql'
+
+require 'pry-byebug'
+
+backup to: $s3 do
+  mysql :all
 end
+
+# Dir['/var/www/*/shared/public/uploads'].each do |dir|
+#   directory dir, name: "#{dir.split('/')[3]} uploads"
+# end
+
+mysql 'scorpion_fitness_development'
+
+# directories Dir['/var/www/*/shared/public/uploads']
+
+# mysql 'zdorovaclinic_development'
+
+
+# directory '/Users/yaroslav/Downloads/excluded' => 'lol', symlinks: :follow
+
+# task special_db_backup
+
+
+# task Backup::Database::MySQL => [:zdorovaclinic, {}]
+
+# files '/Users/yaroslav/Downloads/1Vuvp.png',
+#       '/Users/yaroslav/Downloads/Карта сайта.docx',
+#       name: 'myfiles'
+
+
+# directories '/var/www/zdorovaclinic/shared/public/uploads' => 'zdorovaclinic uploads',
+#             '/var/www/zdorovaclinic/shared/public/uploads' => 'zdorovaclinic uploads',
+#             symlinks: :follow
+
+# file
+# files
+# directory
+# directories
+# mysql
+# mongodb
+
