@@ -12,7 +12,6 @@ require "active_support/core_ext/object/blank"
 require "active_support/core_ext/string/filters"
 require "active_support/core_ext/string/multibyte"
 require "active_support/core_ext/numeric/time"
-require "pry-byebug"
 
 ["ruby", "tar", "gzip", "xz", "mysql", "mysqldump"].each do |x|
   stdout, stderr, exit_status = Open3.capture3(x, "--version")
