@@ -1,73 +1,83 @@
+# encoding: UTF-8
+# frozen_string_literal: true
+
 module Backup::Tasks
   class MySQL
-    include Backup::Utils
+    attr_reader :host, :credentials, :options
 
-    attr_reader :credentials
-
-    def initialize(credentials, databases = :all, options = {})
+    def initialize(host:, credentials:, databases: :all, **options)
+      @host        = host
+      @credentials = credentials
       @databases   = databases
       @options     = options
-      @credentials = credentials
     end
 
     def perform(storage)
       databases.map do |db|
-        dump_name = name_fmt(db, '.sql')
-        dump_path = "#{tmp_dir}/#{dump_name}"
-        dump_cmd  = "mysqldump #{credentials.stringify} #{dump_options.join(' ')} --databases #{db}"
-
-        exec with_env("#{dump_cmd} > #{dump_path}")
-        exec with_env("xz --compress -9 --keep --threads=0 --verbose #{dump_path}")
-
-        storage.write("#{dump_path}.xz" => "#{dump_name}.xz")
+        Tempfile.open do |tempfile|
+          command("mysqldump", *credentials.to_options, *host_options, *dump_options, "--databases", db).tap do |dump_sql|
+            stdin dump_sql do
+              command("xz", "--compress", "-9", "--format=xz", "--keep", "--threads=0", "--verbose", "--check=sha256").tap do |dump_xz|
+                tempfile.write(dump_xz)
+                storage.store(construct_filename(db, ".sql.xz"), tempfile.path)
+              end
+            end
+          end
+        end
       end
     end
 
     def databases
       if @databases == :all
-        exec with_env(%{ mysql #{credentials.stringify} -e "SHOW DATABASES;" })
-               .split("\n")
-               .reject { |el| el =~ /Database|information_schema|mysql|performance_schema|test|phpmyadmin/ }
+        command("mysql", *credentials.to_options, *host_options, "-e", "SHOW DATABASES;")
+            .split("\n")
+            .reject { |el| el =~ /Database|information_schema|mysql|performance_schema|test|phpmyadmin/ }
       else
-        Array(@databases).flatten
+        [@databases].flatten.compact
       end
     end
 
     def dump_options
       @options.fetch(:dump_options) do
-        %w( --add-drop-database
-            --add-drop-table
+        %W( --add-drop-table
             --add-locks
             --allow-keywords
             --comments
             --complete-insert
             --create-options
-            --debug-check
-            --debug-info
+            --disable-keys
             --extended-insert
-            --flush-privileges
-            --insert-ignore
             --lock-tables
             --quick
             --quote-names
+            --routines
             --set-charset
             --dump-date
-            --secure-auth
             --tz-utc
-            --disable-keys )
+            --verbose )
       end
     end
 
+    def host_options
+      ["--host=#{@host}"]
+    end
+
     class Credentials
-      def initialize(params = {})
-        @user     = params.fetch(:user,     'root')
-        @password = params.fetch(:password, 'root')
-        @host     = params.fetch(:host,     'localhost')
+      def initialize(user:, password:)
+        @user     = user
+        @password = password
       end
 
       def stringify
-        password = @password.nil? || @password.empty? ? '' : "--password=#{@password}"
-        "--user #{@user} #{password} --host=#{@host}"
+        "--user #{@user} #{stringify_password}"
+      end
+
+      def stringify_password
+        @password.nil? || @password.empty? ? "" : "--password=#{@password}"
+      end
+
+      def to_options
+        ["--user", @user, stringify_password]
       end
     end
   end

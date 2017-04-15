@@ -1,31 +1,38 @@
-module Backup::Storages
+# encoding: UTF-8
+# frozen_string_literal: true
+
+#
+# Base stuff for storages
+#
+class Backup::Storages
   class Base
-    include Enumerable
-
-    attr_reader :config
-
-    def initialize(config)
-      raise ArgumentError unless Backup::Storages::Base::Config === config
-      @config = config
-    end
-
-    def read(id)
-
-    end
-
-    def write(key, path)
-      raise Backup::MethodNotImplemented, "#{self.class.name}#each"
+    def store(id, path)
+      method_not_implemented
     end
 
     def delete(id)
-      raise Backup::MethodNotImplemented, "#{self.class.name}#delete(key)"
+      method_not_implemented
     end
 
     def each
-      raise Backup::MethodNotImplemented, "#{self.class.name}#each"
+      method_not_implemented
+    end
+
+    class Object
+      attr_reader :storage, :id
+
+      def initialize(storage, id)
+        @storage = storage
+        @id      = id
+      end
+
+      def last_modified
+        method_not_implemented
+      end
+
+      def to_s
+        id
+      end
     end
   end
 end
-
-require 'backup-agent/storages/base-config'
-require 'backup-agent/storages/base-object'
