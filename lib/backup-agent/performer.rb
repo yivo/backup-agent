@@ -22,7 +22,7 @@ module Backup
       task Backup::Tasks::MySQL => [options]
     end
 
-    def directory(path, options)
+    def directory(path, options = {})
       task Backup::Tasks::Directory => [path, options]
     end
   end
