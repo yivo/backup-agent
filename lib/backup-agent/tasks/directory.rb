@@ -9,7 +9,7 @@ module Backup::Tasks
       @options = options
 
       if options[:compressor]
-        @compressor = Symbol === options[:compressor] ? {type: options[:compressor]} : options[:compressor].fetch(:type)
+        @compressor = Symbol === options[:compressor] ? { type: options[:compressor] } : options[:compressor]
       end
     end
 
