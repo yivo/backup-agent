@@ -31,7 +31,7 @@ module Backup::Tasks
       if @databases == :all
         command("mysql", *credentials.to_options, *host_options, "-e", "SHOW DATABASES;")
             .split("\n")
-            .reject { |el| el =~ /Database|information_schema|mysql|performance_schema|test|phpmyadmin/ }
+            .reject { |el| el =~ /database|information_schema|mysql|performance_schema|test|phpmyadmin|pma|sys/i }
       else
         [@databases].flatten.compact
       end

@@ -94,7 +94,7 @@ module Backup
         storage.each do |object|
           if object.last_modified.to_i < cutoff_timestamp
             puts "Delete #{object.to_s} from #{storage.to_s}"
-            object.delete
+            storage.delete(object.id)
           end
         end
       end
