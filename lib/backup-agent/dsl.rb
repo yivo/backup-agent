@@ -24,7 +24,7 @@ module Backup
     end
 
     def command(*args)
-      returned, msec = measure args.map(&:to_s).join(' ') do
+      returned, msec = measure args.map(&:to_s).join(" ") do
 
         if instance_variable_defined?(:@current_command_environment) && @current_command_environment
           args.unshift(@current_command_environment)
@@ -56,11 +56,11 @@ module Backup
     end
 
     def construct_filename(basename, extension_with_dot = nil)
-      [basename.gsub(/[^[[:alnum:]]]/i, '-')
-               .gsub(/[-–—]+/, '-')
+      [basename.gsub(/[^[[:alnum:]]]/i, "-")
+               .gsub(/[-–—]+/, "-")
                .mb_chars.downcase.to_s,
-       "--#{Time.now.getutc.strftime('%Y-%m-%d--%H-%M-%S--UTC')}",
-       extension_with_dot.to_s.mb_chars.downcase.to_s].join('')
+       "--#{Time.now.getutc.strftime("%Y-%m-%d--%H-%M-%S--UTC")}",
+       extension_with_dot.to_s.mb_chars.downcase.to_s].join("")
     end
 
     def storages(pair = nil, &block)
