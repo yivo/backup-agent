@@ -5,7 +5,7 @@ require File.expand_path("../lib/backup-agent/version", __FILE__)
 
 Gem::Specification.new do |s|
   s.name            = "backup-agent"
-  s.version         = "2.0.0"
+  s.version         = Backup::VERSION
   s.authors         = ["Yaroslav Konoplov"]
   s.email           = ["eahome00@gmail.com"]
   s.summary         = "Easy AWS S3 backup"
